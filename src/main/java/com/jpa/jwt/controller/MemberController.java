@@ -1,7 +1,6 @@
 package com.jpa.jwt.controller;
 
 import java.util.Collections;
-import java.util.Map;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +15,10 @@ import com.jpa.jwt.vo.MemberVo;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * @author hyunjae
+ * 회원 컨트롤러
+ */
 @RequiredArgsConstructor
 @RestController
 public class MemberController {

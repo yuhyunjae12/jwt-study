@@ -12,6 +12,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * @author hyunjae
+ * 
+ * 스프링 시큐리티 컨피그 설정
+ *
+ */
 @RequiredArgsConstructor
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
@@ -32,17 +38,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .httpBasic().disable() 
-                .csrf().disable() 
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) 
+                .httpBasic().disable() // 시큐리티 기본 폼을 사용하지 않음
+                .csrf().disable()  // csrf를 사용하지 않음
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션을 사용하지 않음 
                 .and()
                 .authorizeRequests() 
-                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/admin/**").hasRole("ADMIN") //권한 설정
                 .antMatchers("/user/**").hasRole("USER")
                 .anyRequest().permitAll() 
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
-                        UsernamePasswordAuthenticationFilter.class);
+                        UsernamePasswordAuthenticationFilter.class); //  filter를 작성한 JwtAuthenticationFilter를 적용
     }
     
 }
