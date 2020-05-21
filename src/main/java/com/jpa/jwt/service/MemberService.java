@@ -1,11 +1,19 @@
 package com.jpa.jwt.service;
 
+import java.util.Collections;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.jpa.jwt.config.JwtTokenProvider;
+import com.jpa.jwt.entity.MemberEntity;
 import com.jpa.jwt.repository.MemberRepository;
+import com.jpa.jwt.vo.MemberVo;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,20 +23,30 @@ import lombok.RequiredArgsConstructor;
  * 회원 서비스
  *
  */
-// RequiredArgsConstructor 는 final 필드를 생성자 주입해주는 lombok 어노테이션
 @RequiredArgsConstructor
 @Service
-public class MemberService implements UserDetailsService{
+public class MemberService{
 
 	private final MemberRepository memberRepository;
-
-	// UserDetailsService는 UserDetails를 통해 회원정보를 담은 객체를 가져오는 인터 페이스 
-	// loadUserByUsername 구현 메소드를 통해 유저 정보를 불러오게 됩니다. 
-	// 회원 이메일 ( 아이디 )를 통해 회원을 찾습니다.
-	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		return memberRepository.findByEmail(username)
-				.orElseThrow(()-> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+	private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
+	
+	public Long join(final MemberVo vo){
+		return memberRepository.save(MemberEntity.builder()
+                .email(vo.getEmail())
+                .password(passwordEncoder.encode(vo.getPassword()))
+                .roles(Collections.singletonList("ROLE_USER"))
+                .build()).getId();
+	}
+	
+	public String login(final MemberVo vo) {
+		MemberEntity member = memberRepository.findByEmail(vo.getEmail())
+				.orElseThrow(() -> new IllegalArgumentException("가입되지 않은 E-MAIL 입니다."));
+		if (!passwordEncoder.matches(vo.getPassword(), member.getPassword())) {
+			throw new IllegalArgumentException("잘못된 비밀번호입니다.");
+		}
+		
+		return jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
 	}
 	
 }

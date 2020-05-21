@@ -13,6 +13,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
+import com.jpa.jwt.service.MemberService;
+import com.jpa.jwt.service.UsersService;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -34,7 +37,7 @@ public class JwtTokenProvider {
 	// 토큰 유효시간 설정
 	private long tokenVaildTime = 30 * 60 * 1000L;
 	
-	private final UserDetailsService userDetailsService;
+	private final UsersService usersService;
 	
 	/*
 	 * @PostConstruct : was가 구동 될때 실행됨
@@ -61,7 +64,7 @@ public class JwtTokenProvider {
 	
 	// jwt 인증정보 조회
     public Authentication getAuthentication(String token) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(this.getUserPk(token));
+        UserDetails userDetails = usersService.loadUserByUsername(this.getUserPk(token));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 

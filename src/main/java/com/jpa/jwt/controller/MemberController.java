@@ -2,6 +2,8 @@ package com.jpa.jwt.controller;
 
 import java.util.Collections;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jpa.jwt.config.JwtTokenProvider;
 import com.jpa.jwt.entity.MemberEntity;
 import com.jpa.jwt.repository.MemberRepository;
+import com.jpa.jwt.service.MemberService;
 import com.jpa.jwt.vo.MemberVo;
 
 import lombok.RequiredArgsConstructor;
@@ -23,27 +26,16 @@ import lombok.RequiredArgsConstructor;
 @RestController
 public class MemberController {
 	
-	private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final MemberRepository memberRepository;
-
+	private final MemberService memberService;
+	
     @PostMapping("/join")
-    public Long join(@RequestBody MemberVo vo) {
-        return memberRepository.save(MemberEntity.builder()
-                .email(vo.getEmail())
-                .password(passwordEncoder.encode(vo.getPassword()))
-                .roles(Collections.singletonList("ROLE_USER"))
-                .build()).getId();
+    public ResponseEntity<Long> join(@RequestBody final MemberVo vo) {
+        return new ResponseEntity<Long>(memberService.join(vo), HttpStatus.OK);
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody MemberVo vo) {
-    	MemberEntity member = memberRepository.findByEmail(vo.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 E-MAIL 입니다."));
-        if (!passwordEncoder.matches(vo.getPassword(), member.getPassword())) {
-            throw new IllegalArgumentException("잘못된 비밀번호입니다.");
-        }
-        return jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
+    public ResponseEntity<String> login(@RequestBody final MemberVo vo) {
+    	return new ResponseEntity<String>(memberService.login(vo), HttpStatus.OK);
     }
     
     @GetMapping("/user/test")
